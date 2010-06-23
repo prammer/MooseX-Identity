@@ -26,12 +26,13 @@ sub is_identical {
         if ( my $b1 = blessed($v1) ) {
             if ( my $b2 = blessed($v2) ) {
 
+                # just use ->can('is_identical') here?
                 if (does_role(
-                        $v1, 'MooseX::Identity:Interface')) {
+                        $v1, 'MooseX::Identity::Role')) {
                     return $v1->is_identical($v2);
                 }
                 elsif (does_role(
-                        $v2, 'MooseX::Identity::Interface')) {
+                        $v2, 'MooseX::Identity::Role')) {
 
                     # just return here because they are different classes?
                     return $v2->is_identical($v1);

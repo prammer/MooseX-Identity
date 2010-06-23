@@ -5,11 +5,7 @@ use Scalar::Util 'refaddr';
 use Moose::Role;
 use namespace::autoclean;
 
-with (
-    'MooseX::Identity::Interface',
-    'MooseX::Identity::Class',
-    'MooseX::Identity::Value::Interface'
-);
+requires '_is_identical_value';
 
 sub is_identical {
     confess 'wrong number of arguments' if ( @_ != 2 );
@@ -18,6 +14,50 @@ sub is_identical {
     return 1 if ( ref($other) && ( refaddr($self) == refaddr($other) ) );
     return if !$self->_is_identical_class($other);
     return $self->_is_identical_value($other);
+}
+
+sub _is_identical_class {
+    confess 'wrong number of arguments' if ( @_ != 2 );
+    my ( $self, $other ) = @_;
+    confess '_is_identical_class is not a class method' if !ref($self);
+
+#    return if !ref($other);
+#    return if !blessed($other);
+#    return if !find_meta($other);
+    return ( blessed($self) eq ( blessed($other) || '' ) );
+
+#    my $other_meta = Moose::Util::find_meta($other) or return;
+#    my $self_meta = $self->meta;
+    #return ( $self_meta->name eq $other_meta->name );
+
+    # below here may all just be overkill
+    # but it's attractive from a "dog fooding" perspective
+
+    # in some sense, ideally we'd just ask the classes if they are ===
+    # like this:
+    #return $self->meta->is_identical( $other->meta );
+    # but we try to handle heterogeneous cases:
+    #       $self->meta does not do MooseX::Identity::Interface
+    #       $other cannot ->meta
+    #       $other->meta does not do MooseX::Identity::Interface
+
+#    return $self_meta->is_identical($other_meta)
+#        if $self_meta->meta->can('does_role')
+#            && $self_meta->meta->does_role('MooseX::Identity::Interface');
+#        if $self_meta->$does_id;
+#        if Moose::Util::does_role( $self_meta->name,
+#            'MooseX::Identity::Interface' );
+
+    # just return here because they are different classes?
+#    return $other_meta->is_identical($self_meta)
+#        if $other_meta->meta->can('does_role')
+#            && $other_meta->meta->does_role('MooseX::Identity::Interface');
+#        if $other_meta->$does_id;
+#        if Moose::Util::does_role( $other_meta->name,
+#            'MooseX::Identity::Interface' );
+
+    # neither metaclasses do ===
+#    return ( $self_meta->name eq $other_meta->name );
 }
 
 1;
@@ -62,17 +102,5 @@ Also see docs for L<MooseX::Identity>.
 Returns true if this object is the same value as C<$other>.
 
 =back
-
-
-=head1 COMPOSED ROLES
-
-L<MooseX::Identity::Interface>
-
-L<MooseX::Identity::Class>
-
-L<MooseX::Identity::Value::Interface>
-
-Parts of the is_identical implemention is broken down into the above
-roles.
 
 
